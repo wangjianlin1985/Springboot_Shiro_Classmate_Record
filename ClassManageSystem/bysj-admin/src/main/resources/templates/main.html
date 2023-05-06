@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--360浏览器优先以webkit内核解析-->
+    <title>首页</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="../static/css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link href="../static/css/font-awesome.min.css" th:href="@{/css/font-awesome.min.css}" rel="stylesheet"/>
+    <link href="../static/css/main/animate.min.css" th:href="@{/css/main/animate.min.css}" rel="stylesheet"/>
+    <link href="../static/css/main/style.min862f.css" th:href="@{/css/main/style.min862f.css}" rel="stylesheet"/>
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content">
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="ibox float-e-margins" style="display: grid;">
+                    <div class="ibox-title">
+                        <h5>班级列表</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <div th:if="${item.parentId!=0}" class="col-sm-3" th:each="item : ${deptList}">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <label th:text="${item.deptName}"></label>
+                                    <a th:if="${user.dept?.deptName == null}" class="btn btn-sm" th:onclick="apply([[${item.deptId}]])" style="float: right;">加入</a>
+                                </div>
+                                <div class="panel-body">
+                                    <p>负责人：<label th:text="${item.leader}"></label></p>
+                                    <p>联系电话：<label th:text="${item.phone}"></label></p>
+                                    <p>邮箱：<label th:text="${item.email}"></label></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>班级留言</h5>
+                    </div>
+                    <div class="ibox-content no-padding">
+                        <div class="panel-body">
+                            <div class="panel panel-default" th:each="notice : ${noticeList}">
+								<div class="panel-heading">
+								   <h5 class="panel-title">
+									   <a data-toggle="collapse" data-parent="#version" href="#v44">[[${notice.noticeTitle}]]</a>
+                                       <code class="pull-right">[[${notice.createTime}]]</code>
+								   </h5>
+								</div>
+								<div id="v44" class="panel-collapse collapse in" >
+									<div class="panel-body" th:utext ="${notice.noticeContent}">
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/ajax/libs/layer/layer.min.js}"></script>
+        <script th:src="@{/ajax/libs/blockUI/jquery.blockUI.js}"></script>
+        <script th:src="@{/ajax/libs/layer/layer.min.js}"></script>
+        <script th:src="@{/bysj/js/ry-ui.js?v=4.4.0}"></script>
+        <script th:inline="javascript"> var ctx = [[@{/}]]; </script>
+    <script type="text/javascript">
+        $(function() {
+            getClassList({});
+        })
+        function apply(deptId) {
+            layer.confirm('确定要加入该班级吗？', {
+                btn: ['确定','取消'] //按钮
+            }, function(){
+                var url=ctx + "system/apply/add";
+                var config = {
+                    url: url,
+                    type: "post",
+                    dataType: "json",
+                    data: {deptId:deptId},
+                    success: function(result) {
+                        layer.close(layer.index);
+                    }
+                };
+                $.ajax(config);
+            }, function(){layer.close(layer.index);});
+
+        }
+
+        function dateFormat(fmt, date) {
+            let ret;
+            const opt = {
+                "Y+": date.getFullYear().toString(),        // 年
+                "m+": (date.getMonth() + 1).toString(),     // 月
+                "d+": date.getDate().toString(),            // 日
+                "H+": date.getHours().toString(),           // 时
+                "M+": date.getMinutes().toString(),         // 分
+                "S+": date.getSeconds().toString()          // 秒
+                // 有其他格式化字符需求可以继续添加，必须转化成字符串
+            };
+            for (let k in opt) {
+                ret = new RegExp("(" + k + ")").exec(fmt);
+                if (ret) {
+                    fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+                };
+            };
+            return fmt;
+        }
+        function getClassList(data){
+            var url=ctx + "system/dept/list";
+            var config = {
+                url: url,
+                type: "post",
+                dataType: "json",
+                data: data,
+                beforeSend: function () {
+                    $.modal.loading("正在处理中，请稍后...");
+                },
+                success: function(result) {
+                    $.modal.closeLoading();
+
+                }
+            };
+            $.ajax(config)
+        }
+    </script>
+</body>
+</html>
